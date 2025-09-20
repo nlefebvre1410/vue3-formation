@@ -10,6 +10,7 @@
           @input="updateFilter('search', $event.target.value)"
           type="text" 
           placeholder="Rechercher un film..."
+          class="filter-input"
         >
       </div>
 
@@ -19,6 +20,7 @@
           id="categoryFilter" 
           :value="filters.category"
           @change="updateFilter('category', $event.target.value)"
+          class="filter-select"
         >
           <option value="">Toutes les catégories</option>
           <option v-for="category in categories" :key="category" :value="category">
@@ -33,6 +35,7 @@
           id="yearFilter" 
           :value="filters.year"
           @change="updateFilter('year', $event.target.value)"
+          class="filter-select"
         >
           <option value="">Toutes les années</option>
           <option v-for="year in years" :key="year" :value="year">
@@ -47,6 +50,7 @@
           id="ratingFilter" 
           :value="filters.rating"
           @change="updateFilter('rating', $event.target.value)"
+          class="filter-select"
         >
           <option value="">Toutes les notes</option>
           <option v-for="rating in 5" :key="rating" :value="rating">
@@ -61,6 +65,7 @@
           id="favoritesFilter" 
           :value="filters.favorites"
           @change="updateFilter('favorites', $event.target.value)"
+          class="filter-select"
         >
           <option value="">Tous les films</option>
           <option value="true">Favoris uniquement</option>
@@ -165,6 +170,25 @@ export default {
 </script>
 
 <style scoped>
+.filters {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  align-items: end;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-weight: 600;
+  color: #555;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
 .active-filters {
   margin-top: 1.5rem;
   padding-top: 1.5rem;
