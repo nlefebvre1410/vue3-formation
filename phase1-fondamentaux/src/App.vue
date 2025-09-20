@@ -28,16 +28,16 @@
       <!-- Formulaire d'ajout de film -->
       <div class="card">
         <h2>{{ isEditing ? 'Modifier un film' : 'Ajouter un nouveau film' }}</h2>
-        
+
         <form @submit.prevent="isEditing ? updateMovie() : addMovie()">
           <div class="form-group">
             <label for="title">Titre du film :</label>
-            <input 
-              id="title"
-              v-model="newMovie.title" 
-              type="text" 
-              placeholder="Entrez le titre du film"
-              required
+            <input
+                id="title"
+                v-model="newMovie.title"
+                type="text"
+                placeholder="Entrez le titre du film"
+                required
             >
           </div>
 
@@ -53,36 +53,96 @@
 
           <div class="form-group">
             <label for="year">Année :</label>
-            <input 
-              id="year"
-              v-model.number="newMovie.year" 
-              type="number" 
-              min="1900" 
-              :max="currentYear"
-              placeholder="Année de sortie"
-              required
+            <input
+                id="year"
+                v-model.number="newMovie.year"
+                type="number"
+                min="1900"
+                :max="currentYear"
+                placeholder="Année de sortie"
+                required
             >
           </div>
 
           <div class="form-group">
-            <label for="description">Description :</label>
-            <input 
-              id="description"
-              v-model="newMovie.description" 
-              type="text" 
-              placeholder="Description du film"
+            <label for="original_title">Titre original :</label>
+            <input
+                id="original_title"
+                v-model="newMovie.original_title"
+                type="text"
+                placeholder="Titre original du film"
             >
+          </div>
+
+          <div class="form-group">
+            <label for="overview">Synopsis :</label>
+            <textarea
+                id="overview"
+                v-model="newMovie.overview"
+                placeholder="Synopsis du film"
+                rows="3"
+            ></textarea>
+          </div>
+
+          <div class="form-group">
+            <label for="release_date">Date de sortie :</label>
+            <input
+                id="release_date"
+                v-model="newMovie.release_date"
+                type="date"
+                required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="vote_average">Note moyenne :</label>
+            <input
+                id="vote_average"
+                v-model.number="newMovie.vote_average"
+                type="number"
+                min="0"
+                max="10"
+                step="0.1"
+                placeholder="Note sur 10"
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="poster_path">Image du film (URL) :</label>
+            <input
+                id="poster_path"
+                v-model="newMovie.poster_path"
+                type="url"
+                placeholder="https://exemple.com/image.jpg ou /src/assets/images/nom-image.jpg"
+            >
+            <small class="form-help">
+              Vous pouvez utiliser une URL web ou un chemin vers une image locale dans le dossier assets/images/
+            </small>
+          </div>
+
+          <div v-if="isEditing && newMovie.backdrop_path" class="form-group">
+            <label>Image de couverture (backdrop) :</label>
+            <div class="backdrop-preview">
+              <img
+                  :src="newMovie?.backdrop_path"
+                  :alt="`Backdrop de ${newMovie.title}`"
+                  @error="handleImageError"
+              >
+            </div>
+            <small class="form-help">
+              Image de couverture actuelle du film
+            </small>
           </div>
 
           <button type="submit" class="btn">
             {{ isEditing ? 'Mettre à jour' : 'Ajouter le film' }}
           </button>
-          
-          <button 
-            v-if="isEditing" 
-            type="button" 
-            class="btn btn-secondary" 
-            @click="cancelEdit"
+
+          <button
+              v-if="isEditing"
+              type="button"
+              class="btn btn-secondary"
+              @click="cancelEdit"
           >
             Annuler
           </button>
@@ -95,17 +155,18 @@
         <div class="filters">
           <div class="filter-group">
             <label for="search">Recherche :</label>
-            <input 
-              id="search"
-              v-model="searchTerm" 
-              type="text" 
-              placeholder="Rechercher un film..."
+            <input
+                id="search"
+                v-model="searchTerm"
+                type="text"
+                placeholder="Rechercher un film..."
+                class="filter-input"
             >
           </div>
 
           <div class="filter-group">
             <label for="categoryFilter">Filtrer par catégorie :</label>
-            <select id="categoryFilter" v-model="selectedCategory">
+            <select id="categoryFilter" v-model="selectedCategory" class="filter-select">
               <option value="">Toutes les catégories</option>
               <option v-for="category in uniqueCategories" :key="category" :value="category">
                 {{ category }} ({{ getMovieCountByCategory(category) }})
@@ -115,7 +176,7 @@
 
           <div class="filter-group">
             <label for="yearFilter">Filtrer par année :</label>
-            <select id="yearFilter" v-model="selectedYear">
+            <select id="yearFilter" v-model="selectedYear" class="filter-select">
               <option value="">Toutes les années</option>
               <option v-for="year in uniqueYears" :key="year" :value="year">
                 {{ year }}
@@ -141,25 +202,44 @@
 
       <!-- Liste des films -->
       <div v-else class="movies-grid">
-        <div 
-          v-for="movie in filteredMovies" 
-          :key="movie.id" 
-          class="movie-card"
+        <div
+            v-for="movie in filteredMovies"
+            :key="movie.id"
+            class="movie-card"
         >
-          <h3 class="movie-title">{{ movie.title }}</h3>
-          <span class="movie-category">{{ movie.category }}</span>
-          <div class="movie-year">Année : {{ movie.year }}</div>
-          <p class="movie-description" v-if="movie.description">
-            {{ movie.description }}
-          </p>
-          
-          <div class="movie-actions">
-            <button class="btn" @click="editMovie(movie)">
-              Modifier
-            </button>
-            <button class="btn btn-danger" @click="deleteMovie(movie.id)">
-              Supprimer
-            </button>
+          <div class="movie-poster" v-if="movie.poster_path">
+            <img
+                :src="movie.poster_path"
+                :alt="`Poster de ${movie.title}`"
+                @error="handleImageError"
+            >
+
+          </div>
+          <div class="movie-content">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <p class="movie-original-title" v-if="movie.original_title && movie.original_title !== movie.title">
+              <em>{{ movie.original_title }}</em>
+            </p>
+            <div class="movie-info">
+              <span class="movie-category">{{ movie.category }}</span>
+              <span class="movie-year">{{ movie.year }}</span>
+              <span class="movie-rating">⭐ {{ movie.vote_average }}/10</span>
+            </div>
+            <p class="movie-overview" v-if="movie.overview">
+              {{ movie.overview.length > 120 ? movie.overview.substring(0, 120) + '...' : movie.overview }}
+            </p>
+            <div class="movie-stats">
+              <small>{{ movie.vote_count }} votes • Popularité: {{ Math.round(movie.popularity) }}</small>
+            </div>
+
+            <div class="movie-actions">
+              <button class="btn" @click="editMovie(movie)">
+                Modifier
+              </button>
+              <button class="btn btn-danger" @click="deleteMovie(movie.id)">
+                Supprimer
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -168,7 +248,8 @@
 </template>
 
 <script>
-import { ref, computed, reactive } from 'vue'
+import {ref, computed, reactive} from 'vue'
+import moviesData from './movies.json'
 
 export default {
   name: 'App',
@@ -176,36 +257,52 @@ export default {
     // Données réactives
     const appTitle = ref('Annuaire de Films Vue.js 3')
     const appDescription = ref('Gérez votre collection de films avec Vue.js 3 et la Composition API')
-    
-    const movies = ref([
-      {
-        id: 1,
-        title: 'Inception',
-        category: 'Science-Fiction',
-        year: 2010,
-        description: 'Un voleur qui s\'infiltre dans les rêves des gens pour voler leurs secrets.'
-      },
-      {
-        id: 2,
-        title: 'The Dark Knight',
-        category: 'Action',
-        year: 2008,
-        description: 'Batman affronte le Joker dans cette suite épique.'
-      },
-      {
-        id: 3,
-        title: 'Amélie',
-        category: 'Romance',
-        year: 2001,
-        description: 'L\'histoire touchante d\'une jeune femme parisienne.'
-      }
-    ])
+
+    const files = import.meta.glob('./assets/images/*', {eager: true, import: 'default'})
+
+// 2) Crée une map simple : { "fichier.jpg": "url" }
+    const byName = Object.fromEntries(
+        Object.entries(files).map(([path, url]) => [path.split('/').pop(), url])
+    )
+
+// 3) Fonction utilitaire avec fallback
+    const getSrc = (filename) =>
+        byName[filename] ?? new URL('./assets/placeholder.png', import.meta.url).href
+
+// 4) Construire tes films en ajoutant directement les URLs
+    const movies = ref(
+        moviesData.map(movie => ({
+          id: movie.id,
+          title: movie.title,
+          original_title: movie.original_title,
+          overview: movie.overview,
+          release_date: movie.release_date,
+          year: new Date(movie.release_date).getFullYear(),
+          vote_average: movie.vote_average,
+          vote_count: movie.vote_count,
+          popularity: movie.popularity,
+
+          poster_path: getSrc(movie.poster_path),
+          backdrop_path: getSrc(movie.backdrop_path),
+          category:
+              movie.vote_average >= 7 ? 'Excellent'
+                  : movie.vote_average >= 6 ? 'Bon'
+                      : movie.vote_average >= 5 ? 'Moyen'
+                          : 'Décevant'
+        }))
+    )
 
     const newMovie = reactive({
       title: '',
-      category: '',
+      original_title: '',
+      overview: '',
+      release_date: new Date().toISOString().split('T')[0],
       year: new Date().getFullYear(),
-      description: ''
+      vote_average: 5,
+      vote_count: 0,
+      popularity: 0,
+      category: 'Moyen',
+      poster_path: ''
     })
 
     const searchTerm = ref('')
@@ -216,15 +313,10 @@ export default {
 
     // Données statiques
     const availableCategories = [
-      'Action',
-      'Comédie',
-      'Drame',
-      'Horreur',
-      'Romance',
-      'Science-Fiction',
-      'Thriller',
-      'Animation',
-      'Documentaire'
+      'Excellent',
+      'Bon',
+      'Moyen',
+      'Décevant'
     ]
 
     const currentYear = new Date().getFullYear()
@@ -243,10 +335,11 @@ export default {
     const filteredMovies = computed(() => {
       return movies.value.filter(movie => {
         const matchesSearch = movie.title.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-                             movie.description.toLowerCase().includes(searchTerm.value.toLowerCase())
+            (movie.overview && movie.overview.toLowerCase().includes(searchTerm.value.toLowerCase())) ||
+            (movie.original_title && movie.original_title.toLowerCase().includes(searchTerm.value.toLowerCase()))
         const matchesCategory = !selectedCategory.value || movie.category === selectedCategory.value
         const matchesYear = !selectedYear.value || movie.year === selectedYear.value
-        
+
         return matchesSearch && matchesCategory && matchesYear
       })
     })
@@ -257,29 +350,52 @@ export default {
         const movie = {
           id: Date.now(), // Simple ID basé sur le timestamp
           title: newMovie.title,
-          category: newMovie.category,
+          original_title: newMovie.original_title || newMovie.title,
+          overview: newMovie.overview || '',
+          release_date: newMovie.release_date,
           year: newMovie.year,
-          description: newMovie.description || ''
+          vote_average: newMovie.vote_average,
+          vote_count: newMovie.vote_count,
+          popularity: newMovie.popularity,
+          category: newMovie.category,
+          poster_path: newMovie.poster_path || '',
+          backdrop_path: ''
         }
-        
+
         movies.value.push(movie)
         resetForm()
       }
     }
 
     const deleteMovie = (id) => {
-      if (confirm('Êtes-vous sûr de vouloir supprimer ce film ?')) {
-        movies.value = movies.value.filter(movie => movie.id !== id)
-      }
+      movies.value = movies.value.filter(movie => movie.id !== id)
     }
 
     const editMovie = (movie) => {
       isEditing.value = true
       editingMovieId.value = movie.id
       newMovie.title = movie.title
-      newMovie.category = movie.category
+      newMovie.original_title = movie.original_title
+      newMovie.overview = movie.overview
+      newMovie.release_date = movie.release_date
       newMovie.year = movie.year
-      newMovie.description = movie.description
+      newMovie.vote_average = movie.vote_average
+      newMovie.vote_count = movie.vote_count
+      newMovie.popularity = movie.popularity
+      newMovie.category = movie.category
+      newMovie.poster_path = movie.poster_path
+      newMovie.backdrop_path = movie.backdrop_path
+
+      // Scroll vers le formulaire de modification
+      setTimeout(() => {
+        const formElement = document.querySelector('.card h2')
+        if (formElement) {
+          formElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          })
+        }
+      }, 100)
     }
 
     const updateMovie = () => {
@@ -288,9 +404,16 @@ export default {
         movies.value[index] = {
           id: editingMovieId.value,
           title: newMovie.title,
-          category: newMovie.category,
+          original_title: newMovie.original_title,
+          overview: newMovie.overview,
+          release_date: newMovie.release_date,
           year: newMovie.year,
-          description: newMovie.description
+          vote_average: newMovie.vote_average,
+          vote_count: newMovie.vote_count,
+          popularity: newMovie.popularity,
+          category: newMovie.category,
+          poster_path: newMovie.poster_path || movies.value[index].poster_path,
+          backdrop_path: movies.backdrop_path || movies.value[index].backdrop_path,
         }
         cancelEdit()
       }
@@ -304,9 +427,15 @@ export default {
 
     const resetForm = () => {
       newMovie.title = ''
-      newMovie.category = ''
+      newMovie.original_title = ''
+      newMovie.overview = ''
+      newMovie.release_date = new Date().toISOString().split('T')[0]
       newMovie.year = currentYear
-      newMovie.description = ''
+      newMovie.vote_average = 5
+      newMovie.vote_count = 0
+      newMovie.popularity = 0
+      newMovie.category = 'Moyen'
+      newMovie.poster_path = ''
     }
 
     const clearFilters = () => {
@@ -317,6 +446,11 @@ export default {
 
     const getMovieCountByCategory = (category) => {
       return movies.value.filter(movie => movie.category === category).length
+    }
+
+    const handleImageError = (event) => {
+      // Cache l'image si elle ne peut pas être chargée
+      event.target.style.display = 'none'
     }
 
     return {
@@ -331,13 +465,13 @@ export default {
       isEditing,
       availableCategories,
       currentYear,
-      
+
       // Propriétés calculées
       totalMovies,
       uniqueCategories,
       uniqueYears,
       filteredMovies,
-      
+
       // Méthodes
       addMovie,
       deleteMovie,
@@ -345,8 +479,13 @@ export default {
       updateMovie,
       cancelEdit,
       clearFilters,
-      getMovieCountByCategory
+      getMovieCountByCategory,
+      handleImageError
     }
   }
 }
 </script>
+
+<style>
+
+</style>

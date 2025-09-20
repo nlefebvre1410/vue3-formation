@@ -128,7 +128,7 @@ export default {
         formData.rating = newMovie.rating || null
         formData.description = newMovie.description || ''
       } else {
-        resetForm()
+        // resetForm()
       }
     }, { immediate: true })
 
