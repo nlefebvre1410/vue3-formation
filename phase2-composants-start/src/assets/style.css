@@ -241,6 +241,21 @@ body {
   color: #666;
 }
 
+.stars {
+  display: flex;
+  gap: 2px;
+}
+
+.star {
+  color: #ddd;
+  font-size: 1.2rem;
+  transition: color 0.2s ease;
+}
+
+.star-filled {
+  color: #ffc107;
+}
+
 .movie-overview {
   color: #555;
   line-height: 1.5;
@@ -271,32 +286,6 @@ body {
   text-align: center;
 }
 
-/* Composant de notation dans les formulaires */
-.rating-input {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.btn-reset-rating {
-  background: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 50%;
-  width: 30px;
-  height: 30px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  font-size: 0.8rem;
-  transition: all 0.2s ease;
-}
-
-.btn-reset-rating:hover {
-  background: #c82333;
-  transform: scale(1.1);
-}
 
 /* Statistiques */
 .stats {

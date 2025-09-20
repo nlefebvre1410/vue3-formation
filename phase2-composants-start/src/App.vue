@@ -17,10 +17,22 @@
     <div class="container">
       <!-- Statistiques -->
       <div class="stats">
-        <StatsCard :value="totalMovies" label="Films au total" />
-        <StatsCard :value="filteredMovies.length" label="Films affichés" />
-        <StatsCard :value="uniqueCategories.length" label="Catégories" />
-        <StatsCard :value="favoriteMovies.length" label="Favoris" />
+        <div class="stat-card">
+          <span class="stat-number">{{ totalMovies }}</span>
+          <div class="stat-label">Films au total</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">{{ filteredMovies.length }}</span>
+          <div class="stat-label">Films affichés</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">{{ uniqueCategories.length }}</span>
+          <div class="stat-label">Catégories</div>
+        </div>
+        <div class="stat-card">
+          <span class="stat-number">{{ favoriteMovies.length }}</span>
+          <div class="stat-label">Favoris</div>
+        </div>
       </div>
 
       <!-- Formulaire d'ajout/modification de film -->
@@ -33,25 +45,19 @@
 
       <!-- Filtres -->
       <MovieFilters 
-        :filters="filters"
+        :filters="{ 
+          search: searchTerm, 
+          category: selectedCategory, 
+          year: selectedYear,
+          rating: selectedRating,
+          favorites: selectedFavorites
+        }"
         :categories="uniqueCategories"
         :years="uniqueYears"
         :movies="movies"
         @update-filter="updateFilters"
         @clear-filters="clearFilters"
       />
-
-      <!-- Tri des films -->
-      <div class="card">
-        <SortSelector
-          v-model="sortConfig"
-          :options="sortOptions"
-          label="Trier les films :"
-          default-text="Ordre d'ajout"
-          :show-indicator="true"
-          @sort-change="handleSortChange"
-        />
-      </div>
 
       <!-- Message si aucun film -->
       <div v-if="filteredMovies.length === 0" class="message info">
@@ -64,9 +70,9 @@
       </div>
 
       <!-- Liste des films -->
-      <TransitionGroup name="slide" tag="div" class="movies-grid">
+      <TransitionGroup v-else name="slide" tag="div" class="movies-grid">
         <MovieCard 
-          v-for="movie in sortedAndFilteredMovies" 
+          v-for="movie in filteredMovies" 
           :key="movie.id"
           :movie="movie"
           @edit="editMovie"
@@ -81,22 +87,18 @@
 <script>
 import { ref, computed, reactive } from 'vue'
 import AppHeader from './components/AppHeader.vue'
-import StatsCard from './components/StatsCard.vue'
 import MovieForm from './components/MovieForm.vue'
 import MovieFilters from './components/MovieFilters.vue'
 import MovieCard from './components/MovieCard.vue'
-import SortSelector from './components/SortSelector.vue'
 import moviesData from './movies.json'
 
 export default {
   name: 'App',
   components: {
     AppHeader,
-    StatsCard,
     MovieForm,
     MovieFilters,
-    MovieCard,
-    SortSelector
+    MovieCard
   },
   setup() {
     // Données réactives
@@ -140,21 +142,6 @@ export default {
     const selectedRating = ref('')
     const selectedFavorites = ref('')
 
-    // Configuration de tri
-    const sortConfig = ref({
-      sortBy: '',
-      direction: 'asc'
-    })
-
-    const sortOptions = [
-      { value: 'title', label: 'Titre alphabétique' },
-      { value: 'year', label: 'Année de sortie' },
-      { value: 'vote_average', label: 'Note moyenne' },
-      { value: 'category', label: 'Catégorie' },
-      { value: 'popularity', label: 'Popularité' },
-      { value: 'vote_count', label: 'Nombre de votes' }
-    ]
-
     const editingMovie = ref(null)
     const message = reactive({
       text: '',
@@ -191,15 +178,6 @@ export default {
       return movies.value.filter(movie => movie.isFavorite)
     })
 
-    // Objet filters pour MovieFilters
-    const filters = computed(() => ({
-      search: searchTerm.value,
-      category: selectedCategory.value,
-      year: selectedYear.value,
-      rating: selectedRating.value,
-      favorites: selectedFavorites.value
-    }))
-
     const filteredMovies = computed(() => {
       return movies.value.filter(movie => {
         const matchesSearch = movie.title.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
@@ -217,33 +195,6 @@ export default {
           (selectedFavorites.value === 'false' && !movie.isFavorite)
 
         return matchesSearch && matchesCategory && matchesYear && matchesRating && matchesFavorites
-      })
-    })
-
-    // Films triés et filtrés
-    const sortedAndFilteredMovies = computed(() => {
-      if (!sortConfig.value.sortBy) {
-        return filteredMovies.value
-      }
-
-      return [...filteredMovies.value].sort((a, b) => {
-        const { sortBy, direction } = sortConfig.value
-        let aValue = a[sortBy]
-        let bValue = b[sortBy]
-
-        // Gestion des chaînes de caractères
-        if (typeof aValue === 'string') {
-          aValue = aValue.toLowerCase()
-          bValue = bValue.toLowerCase()
-        }
-
-        // Comparaison
-        let result = 0
-        if (aValue < bValue) result = -1
-        else if (aValue > bValue) result = 1
-
-        // Application de la direction
-        return direction === 'desc' ? -result : result
       })
     })
 
@@ -272,7 +223,7 @@ export default {
 
     const deleteMovie = (id) => {
       const movie = movies.value.find(m => m.id === id)
-      if (movie) {
+      if (movie && confirm(`Êtes-vous sûr de vouloir supprimer "${movie.title}" ?`)) {
         movies.value = movies.value.filter(movie => movie.id !== id)
         showMessage(`Film "${movie.title}" supprimé avec succès !`, 'success')
         
@@ -341,28 +292,12 @@ export default {
       selectedFavorites.value = ''
     }
 
-    const updateFilters = (filterType, value) => {
-      switch (filterType) {
-        case 'search':
-          searchTerm.value = value
-          break
-        case 'category':
-          selectedCategory.value = value
-          break
-        case 'year':
-          selectedYear.value = value
-          break
-        case 'rating':
-          selectedRating.value = value
-          break
-        case 'favorites':
-          selectedFavorites.value = value
-          break
-      }
-    }
-
-    const handleSortChange = (newSort) => {
-      console.log('Nouveau tri:', newSort)
+    const updateFilters = (newFilters) => {
+      if (newFilters.search !== undefined) searchTerm.value = newFilters.search
+      if (newFilters.category !== undefined) selectedCategory.value = newFilters.category
+      if (newFilters.year !== undefined) selectedYear.value = newFilters.year
+      if (newFilters.rating !== undefined) selectedRating.value = newFilters.rating
+      if (newFilters.favorites !== undefined) selectedFavorites.value = newFilters.favorites
     }
 
     const getMovieCountByCategory = (category) => {
@@ -405,12 +340,6 @@ export default {
       uniqueYears,
       favoriteMovies,
       filteredMovies,
-      filters,
-      sortedAndFilteredMovies,
-      
-      // Configuration de tri
-      sortConfig,
-      sortOptions,
       
       // Méthodes
       addMovie,
@@ -421,7 +350,6 @@ export default {
       toggleFavorite,
       updateFilters,
       clearFilters,
-      handleSortChange,
       getMovieCountByCategory,
       handleImageError
     }

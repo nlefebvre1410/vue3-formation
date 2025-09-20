@@ -19,11 +19,16 @@
         <span class="movie-year">Année : {{ movie.year }}</span>
         <div v-if="movie.vote_average" class="movie-rating">
           <span class="rating-label">Note :</span>
-          <StarRating 
-            :model-value="Math.round(movie.vote_average / 2)"
-            :interactive="false"
-            size="medium"
-          />
+          <div class="stars">
+            <span 
+              v-for="star in 5" 
+              :key="star"
+              class="star"
+              :class="{ 'star-filled': star <= Math.round(movie.vote_average / 2) }"
+            >
+              ★
+            </span>
+          </div>
         </div>
       </div>
       <p class="movie-overview" v-if="movie.overview">
@@ -37,7 +42,7 @@
         <button class="btn" @click="$emit('edit', movie)">
           Modifier
         </button>
-        <button class="btn btn-danger" @click="showDeleteConfirm = true">
+        <button class="btn btn-danger" @click="$emit('delete', movie.id)">
           Supprimer
         </button>
       </div>
@@ -49,33 +54,12 @@
         {{ movie.isFavorite ? 'Favori' : 'Ajouter aux favoris' }}
       </button>
     </div>
-
-    <!-- Modal de confirmation de suppression -->
-    <ConfirmModal
-      :is-visible="showDeleteConfirm"
-      type="danger"
-      title="Supprimer le film"
-      :message="`Êtes-vous sûr de vouloir supprimer « ${movie.title} » de votre collection ?`"
-      :details="`Film de ${movie.year} • ${movie.category}`"
-      confirm-text="Supprimer définitivement"
-      cancel-text="Annuler"
-      @confirm="handleDelete"
-      @cancel="showDeleteConfirm = false"
-    />
   </div>
 </template>
 
 <script>
-import { ref } from 'vue'
-import StarRating from './StarRating.vue'
-import ConfirmModal from './ConfirmModal.vue'
-
 export default {
   name: 'MovieCard',
-  components: {
-    StarRating,
-    ConfirmModal
-  },
   props: {
     movie: {
       type: Object,
@@ -86,23 +70,10 @@ export default {
     }
   },
   emits: ['edit', 'delete', 'toggle-favorite'],
-  setup(props, { emit }) {
-    const showDeleteConfirm = ref(false)
-
-    const handleDelete = () => {
-      emit('delete', props.movie.id)
-      showDeleteConfirm.value = false
-    }
-
-    const handleImageError = (event) => {
+  methods: {
+    handleImageError(event) {
       // Cache l'image si elle ne peut pas être chargée
       event.target.style.display = 'none'
-    }
-
-    return {
-      showDeleteConfirm,
-      handleDelete,
-      handleImageError
     }
   }
 }

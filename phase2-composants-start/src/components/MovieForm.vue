@@ -38,23 +38,13 @@
       </div>
 
       <div class="form-group">
-        <label>Note (1-5 étoiles) :</label>
-        <div class="rating-input">
-          <StarRating 
-            v-model="formData.rating"
-            :interactive="true"
-            :show-label="true"
-            size="large"
-          />
-          <button 
-            type="button" 
-            class="btn-reset-rating" 
-            @click="formData.rating = 0"
-            title="Supprimer la note"
-          >
-            ✕
-          </button>
-        </div>
+        <label for="rating">Note (1-5 étoiles) :</label>
+        <select id="rating" v-model.number="formData.rating">
+          <option value="">Pas de note</option>
+          <option v-for="rating in 5" :key="rating" :value="rating">
+            {{ rating }} étoile{{ rating > 1 ? 's' : '' }}
+          </option>
+        </select>
       </div>
 
       <div class="form-group">
@@ -95,13 +85,9 @@
 
 <script>
 import { computed, watch, reactive } from 'vue'
-import StarRating from './StarRating.vue'
 
 export default {
   name: 'MovieForm',
-  components: {
-    StarRating
-  },
   props: {
     movie: {
       type: Object,

@@ -3,17 +3,15 @@
     <h2>🔍 Filtres et recherche</h2>
     <div class="filters">
       <div class="filter-group">
-        <label>Recherche :</label>
-        <SearchInput
-          :model-value="filters.search"
+        <label for="search">Recherche :</label>
+        <input 
+          id="search"
+          :value="filters.search"
+          @input="updateFilter('search', $event.target.value)"
+          type="text" 
           placeholder="Rechercher un film..."
-          :debounce-delay="300"
-          :min-length="2"
-          :results-count="movies.length"
-          @update:model-value="updateFilter('search', $event)"
-          @search="updateFilter('search', $event)"
-          @clear="updateFilter('search', '')"
-        />
+          class="filter-input"
+        >
       </div>
 
       <div class="filter-group">
@@ -118,13 +116,9 @@
 
 <script>
 import { computed } from 'vue'
-import SearchInput from './SearchInput.vue'
 
 export default {
   name: 'MovieFilters',
-  components: {
-    SearchInput
-  },
   props: {
     filters: {
       type: Object,
