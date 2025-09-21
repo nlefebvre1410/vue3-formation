@@ -1,114 +1,61 @@
-# Phase 2 : Application faite de composants - VERSION START
+# Phase 2 : Composants Vue.js 3 - VERSION START
 
-Cette phase correspond au **Jour 2** de la formation Human Coders et se concentre sur l'architecture en composants de Vue.js 3.
+Cette phase correspond au **Jour 2** de la formation Human Coders et couvre l'architecture en composants avec Vue.js 3.
 
 > **📚 VERSION DÉMARRAGE** : Cette version contient la base de travail pour les apprenants, sans les exercices implémentés.
 
 ## 🎯 Objectifs de cette phase
 
-- Comprendre le rôle des composants dans une SPA
-- Maîtriser les props et événements
-- Créer des Single File Components
-- Faire communiquer les composants entre eux
-- Structurer une application modulaire
+- Comprendre l'architecture en composants
+- Maîtriser la communication entre composants (props/events)
+- Créer des composants réutilisables
+- Organiser une application en modules
+- Utiliser les slots et la composition de composants
 
 ## 📚 Concepts abordés
 
-### 1. Composants
-- ✅ Rôle du composant dans une SPA
-- ✅ Props et validation
-- ✅ Événements personnalisés (emits)
+### 1. Architecture en composants
+- ✅ Décomposition d'une application en composants
+- ✅ Single File Components (.vue)
+- ✅ Organisation des fichiers et dossiers
+- ✅ Bonnes pratiques de structuration
+
+### 2. Communication entre composants
+- ✅ Props pour passer des données aux enfants
+- ✅ Events pour communiquer vers les parents
+- ✅ v-model personnalisé
+- ✅ Validation des props
+
+### 3. Composants avancés
+- ✅ Slots pour la composition flexible
 - ✅ Composants dynamiques
-- ✅ v-model sur composants
+- ✅ Teleport pour le rendu conditionnel
+- ✅ Provide/inject pour l'injection de dépendances
 
-### 2. Single File Components
-- ✅ Structure .vue (template, script, style)
-- ✅ Styles scopés
-- ✅ Communication parent-enfant
-- ✅ Communication enfant-parent
+## 🎬 Projet fil rouge : Application de films modulaire
 
-## 🏗️ Architecture de l'application
+L'application développée dans cette phase transforme le monolithe de la Phase 1 en architecture modulaire :
 
-L'application a été refactorisée en composants réutilisables :
+### Composants créés
+- ✅ **MovieCard** : Affichage d'un film individuel
+- ✅ **MovieForm** : Formulaire d'ajout/modification
+- ✅ **MovieFilters** : Système de filtrage avancé
+- ✅ **StarRating** : Composant de notation
+- ✅ **ConfirmModal** : Modal de confirmation
+- ✅ **AppHeader** : En-tête de l'application
 
-### Structure des composants (VERSION START)
-
+### Architecture finale
 ```
 src/
-├── App.vue                 # Composant racine
 ├── components/
-│   ├── AppHeader.vue       # En-tête de l'application ✅
-│   ├── MovieForm.vue       # Formulaire d'ajout/édition ✅
-│   ├── MovieFilters.vue    # Filtres et recherche ✅
-│   └── MovieCard.vue       # Carte d'affichage d'un film ✅
-└── assets/
-    └── style.css           # Styles globaux ✅
-```
-
-> **📝 À CRÉER** : Les composants des exercices pratiques ne sont pas inclus dans cette version start.
-
-### 1. AppHeader.vue
-**Props :** `title`, `description`
-- Composant d'en-tête réutilisable
-- Accepte un titre et une description via props
-
-### 2. MovieCard.vue
-**Props :** `movie`
-**Emits :** `edit`, `delete`, `toggle-favorite`
-- Affichage d'un film avec toutes ses informations
-- Gestion des actions (édition, suppression, favoris)
-- Validation des props avec validator
-
-### 3. MovieForm.vue
-**Props :** `movie`, `categories`
-**Emits :** `submit`, `cancel`
-- Formulaire d'ajout/édition de film
-- Mode d'édition automatique selon la prop movie
-- Validation côté client
-
-### 4. MovieFilters.vue
-**Props :** `filters`, `categories`, `years`, `movies`
-**Emits :** `update-filter`, `clear-filters`
-- Système de filtres complet
-- Affichage des filtres actifs
-- Compteurs par catégorie
-
-## 🎬 Fonctionnalités de base (VERSION START)
-
-### Fonctionnalités implémentées
-- ✅ **Listing d'éléments** : Affichage de la liste des films
-- ✅ **Ajouter des films** : Formulaire d'ajout avec validation
-- ✅ **Supprimer des films** : Suppression directe
-- ✅ **Éditer des films** : Modification en place
-- ✅ **Filtres par catégorie** : Filtrage dynamique
-- ✅ **Recherche textuelle** : Recherche dans titre et description
-- ✅ **Filtre par année** : Filtrage par année de sortie
-- ✅ **Système de notes** : Notation 1-5 étoiles (select basique)
-- ✅ **Favoris** : Marquer des films comme favoris
-- ✅ **Messages de feedback** : Notifications d'actions
-- ✅ **Filtres avancés** : Par note et favoris
-- ✅ **Animations** : Transitions CSS pour les films
-- ✅ **Responsive design** : Adaptation mobile
-
-### Communication entre composants
-
-```javascript
-// Parent vers enfant (Props)
-<MovieCard :movie="movie" />
-
-// Enfant vers parent (Events)
-<MovieCard @edit="editMovie" @delete="deleteMovie" />
-
-// Validation des props
-props: {
-  movie: {
-    type: Object,
-    required: true,
-    validator(movie) {
-      return movie.id && movie.title && movie.category
-    }
-  }
-}
+│   ├── MovieCard.vue
+│   ├── MovieForm.vue
+│   ├── MovieFilters.vue
+│   ├── StarRating.vue
+│   ├── ConfirmModal.vue
+│   └── AppHeader.vue
+├── App.vue
+└── main.js
 ```
 
 ## 🚀 Installation et lancement
@@ -120,117 +67,112 @@ pnpm install
 # Lancement du serveur de développement
 pnpm dev
 
-# L'application sera disponible sur http://localhost:3002
+# L'application sera disponible sur http://localhost:3000
 ```
 
 ## 🔍 Points d'apprentissage clés
 
-### 1. Props et validation
-```javascript
-props: {
-  title: {
-    type: String,
-    required: true
-  },
-  value: {
-    type: [Number, String],
-    default: 0
-  }
-}
-```
-
-### 2. Événements personnalisés
-```javascript
-// Définition
-emits: ['edit', 'delete', 'toggle-favorite']
-
-// Émission
-this.$emit('edit', movie)
-
-// Écoute
-<MovieCard @edit="editMovie" />
-```
-
-### 3. Composition API dans les composants
-```javascript
-setup(props, { emit }) {
-  const handleClick = () => {
-    emit('custom-event', data)
-  }
-  
-  return { handleClick }
-}
-```
-
-### 4. Styles scopés
+### 1. Props et Events
 ```vue
-<style scoped>
-.movie-card {
-  /* Styles appliqués uniquement à ce composant */
-}
-</style>
+<!-- Parent -->
+<MovieCard 
+  :movie="movie" 
+  @edit="handleEdit"
+  @delete="handleDelete"
+/>
+
+<!-- Enfant -->
+<script setup>
+const props = defineProps({
+  movie: {
+    type: Object,
+    required: true
+  }
+})
+
+const emit = defineEmits(['edit', 'delete'])
+</script>
 ```
 
-## 🎯 Exercices pratiques À RÉALISER
+### 2. v-model personnalisé
+```vue
+<!-- Composant StarRating -->
+<script setup>
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
 
-### Exercice 1 : Composant de notation ⭐
-**Objectif :** Créez un composant `StarRating` réutilisable pour afficher et modifier les notes.
+const updateRating = (value) => {
+  emit('update:modelValue', value)
+}
+</script>
 
-**Fonctionnalités attendues :**
-- Affichage de 1 à 5 étoiles
-- Mode interactif (cliquable) et lecture seule
-- Support v-model
-- Props configurables (taille, label)
-- Remplacer le select dans MovieForm et les étoiles dans MovieCard
+<!-- Utilisation -->
+<StarRating v-model="movie.rating" />
+```
 
-### Exercice 2 : Composant de recherche 🔍
-**Objectif :** Extrayez la recherche dans un composant `SearchInput` avec debounce.
+### 3. Slots pour la flexibilité
+```vue
+<!-- Composant avec slot -->
+<template>
+  <div class="card">
+    <header class="card-header">
+      <slot name="header"></slot>
+    </header>
+    <main class="card-content">
+      <slot></slot>
+    </main>
+  </div>
+</template>
 
-**Fonctionnalités attendues :**
-- Debounce configurable (300ms par défaut)
-- Indicateur de chargement
-- Bouton de suppression
-- Support Escape
-- Remplacer l'input basique dans MovieFilters
+<!-- Utilisation -->
+<Card>
+  <template #header>
+    <h2>Titre personnalisé</h2>
+  </template>
+  <p>Contenu du composant</p>
+</Card>
+```
 
-### Exercice 3 : Composant modal 🗂️
-**Objectif :** Créez une modal pour confirmer les suppressions.
+## 🎯 Exercices à réaliser
 
-**Fonctionnalités attendues :**
-- Modal avec overlay
-- Types : info, warning, danger, success
-- Teleport vers body
-- Animations d'entrée/sortie
-- Prévention des actions multiples
-- Remplacer la suppression directe
+**4 exercices progressifs** pour maîtriser l'architecture en composants :
 
-### Exercice 4 : Composant de tri 📊
-**Objectif :** Ajoutez un composant `SortSelector` pour trier les films.
+### **⭐ [Exercice 1 : Composant StarRating](./EXERCICE-1-StarRating.md)** (45-60 min)
+**À IMPLÉMENTER** : Créez un composant de notation avec étoiles cliquables et support v-model.
+- **Concepts** : Props, events, v-model personnalisé, validation
+- **Objectif** : Maîtriser la communication parent-enfant
 
-**Fonctionnalités attendues :**
-- Sélection du critère de tri
-- Direction ascendante/descendante
-- Bouton de réinitialisation
-- Indicateur de tri actif
-- Options configurables (titre, année, note, etc.)
+### **📝 [Exercice 2 : Composant MovieForm](./EXERCICE-2-MovieForm.md)** (60-75 min)
+**À IMPLÉMENTER** : Extrayez le formulaire dans un composant réutilisable avec validation avancée.
+- **Concepts** : Formulaires complexes, validation, états de chargement
+- **Objectif** : Créer des composants métier robustes
 
-## 🔧 Défis avancés
+### **🔍 [Exercice 3 : Composant MovieFilters](./EXERCICE-3-MovieFilters.md)** (60-75 min)
+**À IMPLÉMENTER** : Créez un système de filtrage avancé avec recherche et tri.
+- **Concepts** : Computed complexes, watchers, interface utilisateur
+- **Objectif** : Gérer la logique de filtrage et tri
 
-### Défi 1 : Provide/Inject
-Utilisez provide/inject pour partager des données globales.
+### **🔔 [Exercice 4 : Composant ConfirmModal](./EXERCICE-4-ConfirmModal.md)** (45-60 min)
+**À IMPLÉMENTER** : Créez un modal de confirmation réutilisable avec Teleport.
+- **Concepts** : Teleport, accessibilité, animations, gestion du focus
+- **Objectif** : Maîtriser les modals et l'accessibilité
 
-### Défi 2 : Slots
-Ajoutez des slots au composant MovieCard pour personnaliser l'affichage.
+## 📝 Instructions détaillées
 
-### Défi 3 : Composants dynamiques
-Implémentez un système d'onglets avec des composants dynamiques.
+Consultez le fichier **[INSTRUCTIONS.md](./INSTRUCTIONS.md)** pour :
+- 🚀 Guide d'installation et de lancement
+- 📋 Prérequis et structure du projet
+- 💡 Conseils de développement
+- 🧪 Méthodes de test et validation
+- 📚 Ressources complémentaires
 
 ## 📖 Ressources
 
-- [Guide des composants Vue.js](https://vuejs.org/guide/essentials/component-basics.html)
-- [Props et événements](https://vuejs.org/guide/components/props.html)
-- [Single File Components](https://vuejs.org/guide/scaling-up/sfc.html)
+- [Guide des composants Vue.js 3](https://vuejs.org/guide/essentials/component-basics.html)
+- [Props et Events](https://vuejs.org/guide/components/props.html)
+- [Slots](https://vuejs.org/guide/components/slots.html)
+- [Teleport](https://vuejs.org/guide/built-ins/teleport.html)
 
 ## ➡️ Prochaine étape
 
-Une fois cette phase maîtrisée, passez à la **Phase 3 : Réutilisabilité et réactivité** pour explorer les composables, plugins et fonctionnalités avancées.
+Une fois cette phase maîtrisée, passez à la **Phase 3 : Concepts avancés** pour apprendre Pinia, Vue Router et les techniques d'optimisation.

@@ -142,124 +142,99 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useMovies } from '@/composables/useMovies'
 import MovieCard from '@/components/MovieCard.vue'
 
-export default {
-  name: 'Favorites',
-  components: {
-    MovieCard
-  },
-  setup() {
-    const router = useRouter()
-    const {
-      movies,
-      favoriteMovies,
-      totalMovies,
-      deleteMovie,
-      toggleFavorite,
-      message,
-      messageType
-    } = useMovies()
+const router = useRouter()
+const {
+  movies,
+  favoriteMovies,
+  totalMovies,
+  deleteMovie,
+  toggleFavorite,
+  message,
+  messageType
+} = useMovies()
 
-    const localFilters = ref({
-      search: '',
-      category: '',
-      rating: ''
-    })
+const localFilters = ref({
+  search: '',
+  category: '',
+  rating: ''
+})
 
-    const favoriteCategories = computed(() => {
-      return [...new Set(favoriteMovies.value.map(movie => movie.category))].sort()
-    })
+const favoriteCategories = computed(() => {
+  return [...new Set(favoriteMovies.value.map(movie => movie.category))].sort()
+})
 
-    const averageFavoriteRating = computed(() => {
-      const ratedFavorites = favoriteMovies.value.filter(movie => movie.rating)
-      if (ratedFavorites.length === 0) return '0'
-      const sum = ratedFavorites.reduce((acc, movie) => acc + movie.rating, 0)
-      return (sum / ratedFavorites.length).toFixed(1)
-    })
+const averageFavoriteRating = computed(() => {
+  const ratedFavorites = favoriteMovies.value.filter(movie => movie.rating)
+  if (ratedFavorites.length === 0) return '0'
+  const sum = ratedFavorites.reduce((acc, movie) => acc + movie.rating, 0)
+  return (sum / ratedFavorites.length).toFixed(1)
+})
 
-    const favoritePercentage = computed(() => {
-      if (totalMovies.value === 0) return 0
-      return Math.round((favoriteMovies.value.length / totalMovies.value) * 100)
-    })
+const favoritePercentage = computed(() => {
+  if (totalMovies.value === 0) return 0
+  return Math.round((favoriteMovies.value.length / totalMovies.value) * 100)
+})
 
-    const filteredFavorites = computed(() => {
-      return favoriteMovies.value.filter(movie => {
-        const matchesSearch = !localFilters.value.search || 
-          movie.title.toLowerCase().includes(localFilters.value.search.toLowerCase()) ||
-          movie.description.toLowerCase().includes(localFilters.value.search.toLowerCase())
-        
-        const matchesCategory = !localFilters.value.category || movie.category === localFilters.value.category
-        const matchesRating = !localFilters.value.rating || (movie.rating && movie.rating >= parseInt(localFilters.value.rating))
-        
-        return matchesSearch && matchesCategory && matchesRating
-      })
-    })
+const filteredFavorites = computed(() => {
+  return favoriteMovies.value.filter(movie => {
+    const matchesSearch = !localFilters.value.search || 
+      movie.title.toLowerCase().includes(localFilters.value.search.toLowerCase()) ||
+      movie.description.toLowerCase().includes(localFilters.value.search.toLowerCase())
+    
+    const matchesCategory = !localFilters.value.category || movie.category === localFilters.value.category
+    const matchesRating = !localFilters.value.rating || (movie.rating && movie.rating >= parseInt(localFilters.value.rating))
+    
+    return matchesSearch && matchesCategory && matchesRating
+  })
+})
 
-    const suggestedMovies = computed(() => {
-      if (favoriteMovies.value.length === 0) return []
-      
-      // Obtenir les catégories favorites
-      const favoriteCategories = [...new Set(favoriteMovies.value.map(m => m.category))]
-      
-      // Trouver des films non favoris dans ces catégories
-      return movies.value
-        .filter(movie => 
-          !movie.isFavorite && 
-          favoriteCategories.includes(movie.category) &&
-          movie.rating >= 4
-        )
-        .slice(0, 3)
-    })
+const suggestedMovies = computed(() => {
+  if (favoriteMovies.value.length === 0) return []
+  
+  // Obtenir les catégories favorites
+  const favoriteCategories = [...new Set(favoriteMovies.value.map(m => m.category))]
+  
+  // Trouver des films non favoris dans ces catégories
+  return movies.value
+    .filter(movie => 
+      !movie.isFavorite && 
+      favoriteCategories.includes(movie.category) &&
+      movie.rating >= 4
+    )
+    .slice(0, 3)
+})
 
-    const clearLocalFilters = () => {
-      localFilters.value = {
-        search: '',
-        category: '',
-        rating: ''
-      }
-    }
-
-    const handleDeleteMovie = (id) => {
-      const movie = favoriteMovies.value.find(m => m.id === id)
-      if (movie && confirm(`Êtes-vous sûr de vouloir supprimer "${movie.title}" ?`)) {
-        deleteMovie(id)
-      }
-    }
-
-    const handleToggleFavorite = (id) => {
-      toggleFavorite(id)
-    }
-
-    const editMovie = (movie) => {
-      router.push({ name: 'Movies', query: { edit: movie.id } })
-    }
-
-    const viewMovieDetails = (movie) => {
-      router.push(`/movies/${movie.id}`)
-    }
-
-    return {
-      favoriteMovies,
-      favoriteCategories,
-      averageFavoriteRating,
-      favoritePercentage,
-      filteredFavorites,
-      suggestedMovies,
-      localFilters,
-      message,
-      messageType,
-      clearLocalFilters,
-      handleDeleteMovie,
-      handleToggleFavorite,
-      editMovie,
-      viewMovieDetails
-    }
+const clearLocalFilters = () => {
+  localFilters.value = {
+    search: '',
+    category: '',
+    rating: ''
   }
+}
+
+const handleDeleteMovie = (id) => {
+  const movie = favoriteMovies.value.find(m => m.id === id)
+  if (movie && confirm(`Êtes-vous sûr de vouloir supprimer "${movie.title}" ?`)) {
+    deleteMovie(id)
+  }
+}
+
+const handleToggleFavorite = (id) => {
+  toggleFavorite(id)
+}
+
+const editMovie = (movie) => {
+  router.push({ name: 'Movies', query: { edit: movie.id } })
+}
+
+const viewMovieDetails = (movie) => {
+  router.push(`/movies/${movie.id}`)
 }
 </script>
 

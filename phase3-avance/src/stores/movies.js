@@ -1,70 +1,75 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import moviesData from '@/assets/data/movies.json'
+
+
+const files = import.meta.glob('../assets/images/*.jpg', {eager: true, import: 'default'})
+
+const byName = Object.fromEntries(
+  Object.entries(files).map(([path, url]) => [path.split('/').pop(), url])
+)
+// Fonction pour créer une image SVG de fallback
+const createPlaceholderSvg = (text, width = 300, height = 450) => {
+  const svg = `
+    <svg width="${width}" height="${height}" xmlns="http://www.w3.org/2000/svg">
+      <rect width="100%" height="100%" fill="#667eea"/>
+      <text x="50%" y="50%" font-family="Arial, sans-serif" font-size="16" fill="white" text-anchor="middle" dominant-baseline="middle">
+        ${text}
+      </text>
+    </svg>
+  `
+  return `data:image/svg+xml;base64,${btoa(svg)}`
+}
+
+// Fonction utilitaire avec fallback
+const getSrc = (filename) => {
+  if (byName[filename]) {
+    
+    return byName[filename]
+  }
+  
+  // Créer un placeholder SVG avec le nom du film
+  const movieId = filename.split('_')[0]
+  return createPlaceholderSvg(`Film ${movieId}`)
+}
+
+// Fonction pour mapper les données vers notre format
+const mapMovieData = (movie) => {
+  // Extraire l'année de la date de sortie
+  const year = new Date(movie.release_date).getFullYear()
+  
+  // Catégories disponibles (pour référence)
+  const availableCategories = [
+    'Action',
+    'Comédie',
+    'Drame',
+    'Horreur',
+    'Romance',
+    'Science-Fiction',
+    'Thriller',
+    'Animation',
+    'Documentaire'
+  ]
+  
+  return {
+    id: movie.id,
+    title: movie.title,
+    original_title: movie.original_title,
+    category: movie.category || 'Drame',
+    year: year,
+    rating: Math.round(movie.vote_average / 2), // Convertir /10 vers /5
+    description: movie.overview,
+    isFavorite: false, // Par défaut
+    director: movie.director || 'Réalisateur inconnu',
+    duration: Math.floor(Math.random() * 60) + 90, // Durée simulée entre 90-150 min
+    poster: getSrc(movie.poster_path),
+    backdrop: getSrc(movie.backdrop_path)
+  }
+}
 
 export const useMoviesStore = defineStore('movies', () => {
-  // State
-  const movies = ref([
-    {
-      id: 1,
-      title: 'Inception',
-      category: 'Science-Fiction',
-      year: 2010,
-      rating: 5,
-      description: 'Un voleur qui s\'infiltre dans les rêves des gens pour voler leurs secrets.',
-      isFavorite: true,
-      director: 'Christopher Nolan',
-      duration: 148,
-      poster: 'https://via.placeholder.com/300x450/667eea/ffffff?text=Inception'
-    },
-    {
-      id: 2,
-      title: 'The Dark Knight',
-      category: 'Action',
-      year: 2008,
-      rating: 5,
-      description: 'Batman affronte le Joker dans cette suite épique.',
-      isFavorite: false,
-      director: 'Christopher Nolan',
-      duration: 152,
-      poster: 'https://via.placeholder.com/300x450/42b883/ffffff?text=Dark+Knight'
-    },
-    {
-      id: 3,
-      title: 'Amélie',
-      category: 'Romance',
-      year: 2001,
-      rating: 4,
-      description: 'L\'histoire touchante d\'une jeune femme parisienne.',
-      isFavorite: true,
-      director: 'Jean-Pierre Jeunet',
-      duration: 122,
-      poster: 'https://via.placeholder.com/300x450/e74c3c/ffffff?text=Amélie'
-    },
-    {
-      id: 4,
-      title: 'Parasite',
-      category: 'Thriller',
-      year: 2019,
-      rating: 5,
-      description: 'Une famille pauvre s\'infiltre dans la vie d\'une famille riche.',
-      isFavorite: false,
-      director: 'Bong Joon-ho',
-      duration: 132,
-      poster: 'https://via.placeholder.com/300x450/f39c12/ffffff?text=Parasite'
-    },
-    {
-      id: 5,
-      title: 'Spirited Away',
-      category: 'Animation',
-      year: 2001,
-      rating: 5,
-      description: 'Une jeune fille découvre un monde magique peuplé d\'esprits.',
-      isFavorite: true,
-      director: 'Hayao Miyazaki',
-      duration: 125,
-      poster: 'https://via.placeholder.com/300x450/9b59b6/ffffff?text=Spirited+Away'
-    }
-  ])
+  // State - Charger les données depuis le JSON
+  const movies = ref(moviesData.map(mapMovieData))
 
   const filters = ref({
     search: '',
@@ -123,7 +128,7 @@ export const useMoviesStore = defineStore('movies', () => {
       id: Date.now(),
       ...movieData,
       isFavorite: false,
-      poster: `https://via.placeholder.com/300x450/667eea/ffffff?text=${encodeURIComponent(movieData.title)}`
+      poster: createPlaceholderSvg(movieData.title)
     }
     movies.value.push(movie)
     return movie

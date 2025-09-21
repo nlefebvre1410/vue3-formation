@@ -2,7 +2,7 @@
 
 ## 🎯 Bienvenue dans la Phase 2 !
 
-Cette version **START** contient la base de travail pour apprendre l'architecture en composants Vue.js 3.
+Cette version **START** contient la base de travail pour apprendre l'architecture en composants avec Vue.js 3.
 
 ## 🚀 Installation et lancement
 
@@ -16,7 +16,7 @@ pnpm install
 # Lancement du serveur de développement
 pnpm dev
 
-# L'application sera disponible sur http://localhost:3003
+# L'application sera disponible sur http://localhost:3000
 ```
 
 ## 🏗️ Structure actuelle

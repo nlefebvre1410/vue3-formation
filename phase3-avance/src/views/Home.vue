@@ -141,51 +141,36 @@
   </div>
 </template>
 
-<script>
+<script setup>
 import { computed } from 'vue'
 import { useMovies } from '@/composables/useMovies'
 
-export default {
-  name: 'Home',
-  setup() {
-    const { 
-      movies, 
-      favoriteMovies, 
-      totalMovies, 
-      uniqueCategories, 
-      averageRating,
-      getMoviesByCategory 
-    } = useMovies()
+const { 
+  movies, 
+  favoriteMovies, 
+  totalMovies, 
+  uniqueCategories, 
+  averageRating,
+  getMoviesByCategory 
+} = useMovies()
 
-    const recentMovies = computed(() => {
-      return [...movies.value]
-        .sort((a, b) => b.year - a.year)
-        .slice(0, 3)
-    })
+const recentMovies = computed(() => {
+  return [...movies.value]
+    .sort((a, b) => b.year - a.year)
+    .slice(0, 3)
+})
 
-    const topCategories = computed(() => {
-      const categoryCount = {}
-      movies.value.forEach(movie => {
-        categoryCount[movie.category] = (categoryCount[movie.category] || 0) + 1
-      })
-      
-      return Object.entries(categoryCount)
-        .map(([name, count]) => ({ name, count }))
-        .sort((a, b) => b.count - a.count)
-        .slice(0, 4)
-    })
-
-    return {
-      movies,
-      favoriteMovies,
-      totalMovies,
-      uniqueCategories,
-      averageRating,
-      recentMovies,
-      topCategories
-    }
-  }
-}
+const topCategories = computed(() => {
+  const categoryCount = {}
+  movies.value.forEach(movie => {
+    categoryCount[movie.category] = (categoryCount[movie.category] || 0) + 1
+  })
+  
+  return Object.entries(categoryCount)
+    .map(([name, count]) => ({ name, count }))
+    .sort((a, b) => b.count - a.count)
+    .slice(0, 4)
+})
 </script>
 
 <style scoped>
