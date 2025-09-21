@@ -1,6 +1,8 @@
-# Phase 1 : Fondamentaux Vue.js 3
+# Phase 1 : Fondamentaux Vue.js 3 - VERSION START
 
 Cette phase correspond au **Jour 1** de la formation Human Coders et couvre les fondamentaux de Vue.js 3.
+
+> **📚 VERSION DÉMARRAGE** : Cette version contient la base de travail pour les apprenants, sans les exercices implémentés.
 
 ## 🎯 Objectifs de cette phase
 
@@ -62,7 +64,7 @@ pnpm install
 # Lancement du serveur de développement
 pnpm dev
 
-# L'application sera disponible sur http://localhost:3001
+# L'application sera disponible sur http://localhost:3000
 ```
 
 ## 🔍 Points d'apprentissage clés
@@ -101,33 +103,31 @@ export default {
 - `:class` : Classes dynamiques
 - `:style` : Styles dynamiques
 
-## 🎯 Exercices pratiques
+## 🎯 Exercices à réaliser
 
 **4 exercices progressifs** pour approfondir les fondamentaux Vue.js 3 :
 
 ### **⭐ Exercice 1 : Système de notes** (30-45 min)
-Ajoutez un champ "note" (1-5 étoiles) aux films et affichez-la avec des étoiles visuelles.
-- **Fichier** : `EXERCICE-1-Notes.md`
+**À IMPLÉMENTER** : Ajoutez un champ "note" (1-5 étoiles) aux films et affichez-la avec des étoiles visuelles.
 - **Concepts** : computed, v-for conditionnel, styles dynamiques
+- **Objectif** : Ajouter des données réactives et des calculs automatiques
 
 ### **📊 Exercice 2 : Système de tri** (45-60 min)
-Implémentez un système de tri par titre, année ou note avec interface utilisateur.
-- **Fichier** : `EXERCICE-2-Tri.md`
+**À IMPLÉMENTER** : Implémentez un système de tri par titre, année ou note avec interface utilisateur.
 - **Concepts** : computed avancées, manipulation d'arrays, gestion d'état
+- **Objectif** : Maîtriser les propriétés calculées complexes
 
 ### **❤️ Exercice 3 : Système de favoris** (30-45 min)
-Ajoutez un système de films favoris avec un bouton cœur et filtrage.
-- **Fichier** : `EXERCICE-3-Favoris.md`
+**À IMPLÉMENTER** : Ajoutez un système de films favoris avec un bouton cœur et filtrage.
 - **Concepts** : événements, modifications d'état, filtrage, feedback
+- **Objectif** : Gérer les interactions utilisateur et l'état
 
 ### **✅ Exercice 4 : Validation avancée** (60-90 min)
-Améliorez la validation du formulaire avec règles métier et validation temps réel.
-- **Fichier** : `EXERCICE-4-Validation.md`
+**À IMPLÉMENTER** : Améliorez la validation du formulaire avec règles métier et validation temps réel.
 - **Concepts** : watchers, validation temps réel, gestion d'erreurs, UX
+- **Objectif** : Créer une expérience utilisateur professionnelle
 
-### **📚 Guides disponibles**
-- **`EXERCICES-APPRENANTS.md`** : Guide complet pour les apprenants
-- **`EXERCICES-GUIDE-FORMATEUR.md`** : Guide pédagogique pour les formateurs
+> **📝 Note** : Les fichiers d'exercices détaillés sont disponibles dans la version complète `phase1-fondamentaux`
 
 ## 📖 Ressources
 
