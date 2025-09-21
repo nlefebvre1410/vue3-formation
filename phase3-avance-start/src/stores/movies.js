@@ -2,12 +2,12 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import moviesData from '@/assets/data/movies.json'
 
-
+// Chargement des images avec import.meta.glob
 const files = import.meta.glob('../assets/images/*.jpg', {eager: true, import: 'default'})
-
 const byName = Object.fromEntries(
   Object.entries(files).map(([path, url]) => [path.split('/').pop(), url])
 )
+
 // Fonction pour créer une image SVG de fallback
 const createPlaceholderSvg = (text, width = 300, height = 450) => {
   const svg = `
@@ -21,35 +21,14 @@ const createPlaceholderSvg = (text, width = 300, height = 450) => {
   return `data:image/svg+xml;base64,${btoa(svg)}`
 }
 
-// Fonction utilitaire avec fallback
+// Fonction utilitaire pour les images
 const getSrc = (filename) => {
-  if (byName[filename]) {
-    
-    return byName[filename]
-  }
-  
-  // Créer un placeholder SVG avec le nom du film
-  const movieId = filename.split('_')[0]
-  return createPlaceholderSvg(`Film ${movieId}`)
+  return byName[filename] || createPlaceholderSvg(`Film ${filename.split('_')[0]}`)
 }
 
 // Fonction pour mapper les données vers notre format
 const mapMovieData = (movie) => {
-  // Extraire l'année de la date de sortie
   const year = new Date(movie.release_date).getFullYear()
-  
-  // Catégories disponibles (pour référence)
-  const availableCategories = [
-    'Action',
-    'Comédie',
-    'Drame',
-    'Horreur',
-    'Romance',
-    'Science-Fiction',
-    'Thriller',
-    'Animation',
-    'Documentaire'
-  ]
   
   return {
     id: movie.id,
@@ -57,20 +36,19 @@ const mapMovieData = (movie) => {
     original_title: movie.original_title,
     category: movie.category || 'Drame',
     year: year,
-    rating: Math.round(movie.vote_average / 2), // Convertir /10 vers /5
+    rating: Math.round(movie.vote_average / 2),
     description: movie.overview,
-    isFavorite: false, // Par défaut
+    isFavorite: false,
     director: movie.director || 'Réalisateur inconnu',
-    duration: Math.floor(Math.random() * 60) + 90, // Durée simulée entre 90-150 min
+    duration: Math.floor(Math.random() * 60) + 90,
     poster: getSrc(movie.poster_path),
     backdrop: getSrc(movie.backdrop_path)
   }
 }
 
 export const useMoviesStore = defineStore('movies', () => {
-  // State - Charger les données depuis le JSON
-  const movies = ref(moviesData.map(mapMovieData))
-
+  // État de base - s'assurer que les données sont bien chargées
+  const movies = ref([])
   const filters = ref({
     search: '',
     category: '',
@@ -79,30 +57,34 @@ export const useMoviesStore = defineStore('movies', () => {
     favorites: ''
   })
 
-  const isLoading = ref(false)
-  const error = ref(null)
+  // Initialiser les films
+  try {
+    movies.value = moviesData.map(mapMovieData)
+    console.log('Films chargés:', movies.value.length, 'films')
+  } catch (error) {
+    console.error('Erreur lors du chargement des données:', error)
+    movies.value = []
+  }
 
-  // Getters
-  const totalMovies = computed(() => movies.value.length)
+  // Getters de base avec protection
+  const totalMovies = computed(() => movies.value?.length || 0)
   
   const favoriteMovies = computed(() => 
-    movies.value.filter(movie => movie.isFavorite)
+    movies.value?.filter(movie => movie.isFavorite) || []
   )
   
   const uniqueCategories = computed(() => 
-    [...new Set(movies.value.map(movie => movie.category))].sort()
-  )
-  
-  const uniqueYears = computed(() => 
-    [...new Set(movies.value.map(movie => movie.year))].sort((a, b) => b - a)
+    movies.value?.length > 0 
+      ? [...new Set(movies.value.map(movie => movie.category))].sort()
+      : []
   )
 
   const filteredMovies = computed(() => {
+    if (!movies.value || !Array.isArray(movies.value)) return []
+    
     return movies.value.filter(movie => {
       const matchesSearch = !filters.value.search || 
-        movie.title.toLowerCase().includes(filters.value.search.toLowerCase()) ||
-        movie.description.toLowerCase().includes(filters.value.search.toLowerCase()) ||
-        movie.director.toLowerCase().includes(filters.value.search.toLowerCase())
+        movie.title.toLowerCase().includes(filters.value.search.toLowerCase())
       
       const matchesCategory = !filters.value.category || movie.category === filters.value.category
       const matchesYear = !filters.value.year || movie.year.toString() === filters.value.year
@@ -115,14 +97,7 @@ export const useMoviesStore = defineStore('movies', () => {
     })
   })
 
-  const averageRating = computed(() => {
-    const ratedMovies = movies.value.filter(movie => movie.rating)
-    if (ratedMovies.length === 0) return 0
-    const sum = ratedMovies.reduce((acc, movie) => acc + movie.rating, 0)
-    return (sum / ratedMovies.length).toFixed(1)
-  })
-
-  // Actions
+  // Actions de base
   const addMovie = (movieData) => {
     const movie = {
       id: Date.now(),
@@ -146,11 +121,10 @@ export const useMoviesStore = defineStore('movies', () => {
   const deleteMovie = (id) => {
     const index = movies.value.findIndex(movie => movie.id === id)
     if (index !== -1) {
-      const deletedMovie = movies.value[index]
       movies.value.splice(index, 1)
-      return deletedMovie
+      return true
     }
-    return null
+    return false
   }
 
   const toggleFavorite = (id) => {
@@ -180,47 +154,17 @@ export const useMoviesStore = defineStore('movies', () => {
     }
   }
 
-  const getMoviesByCategory = (category) => {
-    return movies.value.filter(movie => movie.category === category)
-  }
-
-  const searchMovies = async (query) => {
-    isLoading.value = true
-    error.value = null
-    
-    try {
-      // Simulation d'une recherche asynchrone
-      await new Promise(resolve => setTimeout(resolve, 500))
-      
-      const results = movies.value.filter(movie =>
-        movie.title.toLowerCase().includes(query.toLowerCase()) ||
-        movie.description.toLowerCase().includes(query.toLowerCase()) ||
-        movie.director.toLowerCase().includes(query.toLowerCase())
-      )
-      
-      return results
-    } catch (err) {
-      error.value = 'Erreur lors de la recherche'
-      return []
-    } finally {
-      isLoading.value = false
-    }
-  }
-
+  // Retourner les propriétés et actions du store
   return {
-    // State
+    // État
     movies,
     filters,
-    isLoading,
-    error,
     
     // Getters
     totalMovies,
     favoriteMovies,
     uniqueCategories,
-    uniqueYears,
     filteredMovies,
-    averageRating,
     
     // Actions
     addMovie,
@@ -229,8 +173,6 @@ export const useMoviesStore = defineStore('movies', () => {
     toggleFavorite,
     getMovieById,
     updateFilters,
-    clearFilters,
-    getMoviesByCategory,
-    searchMovies
+    clearFilters
   }
 })

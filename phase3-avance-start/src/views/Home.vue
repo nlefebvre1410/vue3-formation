@@ -155,12 +155,15 @@ const {
 } = useMovies()
 
 const recentMovies = computed(() => {
+  if (!movies.value || !Array.isArray(movies.value)) return []
   return [...movies.value]
     .sort((a, b) => b.year - a.year)
     .slice(0, 3)
 })
 
 const topCategories = computed(() => {
+  if (!movies.value || !Array.isArray(movies.value)) return []
+  
   const categoryCount = {}
   movies.value.forEach(movie => {
     categoryCount[movie.category] = (categoryCount[movie.category] || 0) + 1

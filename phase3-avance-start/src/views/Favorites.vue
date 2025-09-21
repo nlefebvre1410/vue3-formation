@@ -8,7 +8,7 @@
     <!-- Statistiques des favoris -->
     <div class="stats">
       <div class="stat-card">
-        <span class="stat-number">{{ favoriteMovies.length }}</span>
+        <span class="stat-number">{{ favoriteMovies?.length || 0 }}</span>
         <div class="stat-label">Films favoris</div>
       </div>
       <div class="stat-card">
@@ -26,7 +26,7 @@
     </div>
 
     <!-- Filtres pour les favoris -->
-    <div class="card" v-if="favoriteMovies.length > 0">
+    <div class="card" v-if="favoriteMovies?.length > 0">
       <h2>🔍 Filtrer vos favoris</h2>
       <div class="filters">
         <div class="filter-group">
@@ -68,15 +68,9 @@
       </div>
     </div>
 
-    <!-- Messages -->
-    <Transition name="fade">
-      <div v-if="message" :class="['message', messageType]">
-        {{ message }}
-      </div>
-    </Transition>
 
     <!-- Message si aucun favori -->
-    <div v-if="favoriteMovies.length === 0" class="empty-state">
+    <div v-if="!favoriteMovies || favoriteMovies.length === 0" class="empty-state">
       <div class="empty-icon">💔</div>
       <h2>Aucun film favori</h2>
       <p>Vous n'avez pas encore ajouté de films à vos favoris.</p>
@@ -105,7 +99,7 @@
     </TransitionGroup>
 
     <!-- Suggestions -->
-    <div v-if="favoriteMovies.length > 0 && suggestedMovies.length > 0" class="suggestions">
+    <div v-if="favoriteMovies?.length > 0 && suggestedMovies.length > 0" class="suggestions">
       <div class="card">
         <h2>💡 Suggestions basées sur vos favoris</h2>
         <p>Ces films pourraient vous plaire :</p>
@@ -154,9 +148,7 @@ const {
   favoriteMovies,
   totalMovies,
   deleteMovie,
-  toggleFavorite,
-  message,
-  messageType
+  toggleFavorite
 } = useMovies()
 
 const localFilters = ref({
@@ -166,10 +158,12 @@ const localFilters = ref({
 })
 
 const favoriteCategories = computed(() => {
+  if (!favoriteMovies.value || !Array.isArray(favoriteMovies.value)) return []
   return [...new Set(favoriteMovies.value.map(movie => movie.category))].sort()
 })
 
 const averageFavoriteRating = computed(() => {
+  if (!favoriteMovies.value || !Array.isArray(favoriteMovies.value)) return '0'
   const ratedFavorites = favoriteMovies.value.filter(movie => movie.rating)
   if (ratedFavorites.length === 0) return '0'
   const sum = ratedFavorites.reduce((acc, movie) => acc + movie.rating, 0)
@@ -177,11 +171,12 @@ const averageFavoriteRating = computed(() => {
 })
 
 const favoritePercentage = computed(() => {
-  if (totalMovies.value === 0) return 0
+  if (totalMovies.value === 0 || !favoriteMovies.value) return 0
   return Math.round((favoriteMovies.value.length / totalMovies.value) * 100)
 })
 
 const filteredFavorites = computed(() => {
+  if (!favoriteMovies.value || !Array.isArray(favoriteMovies.value)) return []
   return favoriteMovies.value.filter(movie => {
     const matchesSearch = !localFilters.value.search || 
       movie.title.toLowerCase().includes(localFilters.value.search.toLowerCase()) ||
@@ -195,7 +190,8 @@ const filteredFavorites = computed(() => {
 })
 
 const suggestedMovies = computed(() => {
-  if (favoriteMovies.value.length === 0) return []
+  if (!favoriteMovies.value || !Array.isArray(favoriteMovies.value) || favoriteMovies.value.length === 0) return []
+  if (!movies.value || !Array.isArray(movies.value)) return []
   
   // Obtenir les catégories favorites
   const favoriteCategories = [...new Set(favoriteMovies.value.map(m => m.category))]
