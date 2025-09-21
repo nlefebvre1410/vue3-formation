@@ -1,4 +1,4 @@
-# Nuxt dev/build outputs
+# dev/build outputs
 .output
 .data
 .nuxt
@@ -6,23 +6,5 @@
 .cache
 dist
 
-# Node dependencies
-node_modules
-
-# Misc
-.DS_Store
-.fleet
-.idea
-
-# Local env files
-.env
-.env.*
-!.env.example
-
-# Logs
-logs/
-*.log
-/.wrangler/
-/.pnpm-store/
-
-phase1-fondamentaux/package-lock.json
+/phase1-fondamentaux-start/
+/phase1-fondamentaux-start/node_modules/*
