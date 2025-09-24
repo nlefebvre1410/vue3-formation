@@ -44,19 +44,13 @@
       />
 
       <!-- Filtres -->
-      <MovieFilters 
-        :filters="{ 
-          search: searchTerm, 
-          category: selectedCategory, 
-          year: selectedYear,
-          rating: selectedRating,
-          favorites: selectedFavorites
-        }"
-        :categories="uniqueCategories"
-        :years="uniqueYears"
+      <MovieFilters
         :movies="movies"
-        @update-filter="updateFilters"
-        @clear-filters="clearFilters"
+        :categories="uniqueCategories" 
+        :initialFilters="defaultFilters"
+        :currentYear="currentYear"
+        @update:filters="handleFiltersUpdate"
+        @reset="handleFiltersReset"
       />
 
       <!-- Message si aucun film -->
@@ -128,7 +122,6 @@ export default {
           vote_average: movie.vote_average,
           vote_count: movie.vote_count,
           popularity: movie.popularity,
-
           poster_path: getSrc(movie.poster_path),
           backdrop_path: getSrc(movie.backdrop_path),
           category: movie.category,
@@ -161,42 +154,42 @@ export default {
       'Documentaire'
     ]
 
+    const defaultFilters = {
+      search: '',
+      category: '',
+      yearFrom: null,
+      yearTo: null,
+      minRating: 0,
+      favoritesOnly: false,
+      sortBy: 'title',
+      sortOrder: 'asc'
+    }
+
     const currentYear = new Date().getFullYear()
 
     // Propriétés calculées
     const totalMovies = computed(() => movies.value.length)
 
     const uniqueCategories = computed(() => {
-      return [...new Set(movies.value.map(movie => movie.category))].sort()
-    })
-
-    const uniqueYears = computed(() => {
-      return [...new Set(movies.value.map(movie => movie.year))].sort((a, b) => b - a)
+        return [...new Set(movies.value.map(movie => movie.category))].sort()
     })
 
     const favoriteMovies = computed(() => {
       return movies.value.filter(movie => movie.isFavorite)
     })
 
-    const filteredMovies = computed(() => {
-      return movies.value.filter(movie => {
-        const matchesSearch = movie.title.toLowerCase().includes(searchTerm.value.toLowerCase()) ||
-            (movie.overview && movie.overview.toLowerCase().includes(searchTerm.value.toLowerCase())) ||
-            (movie.original_title && movie.original_title.toLowerCase().includes(searchTerm.value.toLowerCase()))
-        const matchesCategory = !selectedCategory.value || movie.category === selectedCategory.value
-        const matchesYear = !selectedYear.value || movie.year === parseInt(selectedYear.value)
-        
-        // Filtre par note (convertir la note sur 10 en étoiles sur 5)
-        const matchesRating = !selectedRating.value || (movie.vote_average && Math.round(movie.vote_average / 2) >= parseInt(selectedRating.value))
-        
-        // Filtre par favoris
-        const matchesFavorites = !selectedFavorites.value || 
-          (selectedFavorites.value === 'true' && movie.isFavorite) ||
-          (selectedFavorites.value === 'false' && !movie.isFavorite)
+    const filteredMovies = ref([]) 
 
-        return matchesSearch && matchesCategory && matchesYear && matchesRating && matchesFavorites
-      })
-    })
+    const handleFiltersUpdate = ({ filters, results }) => {
+      filteredMovies.value = results
+      // Optionnel : sauvegarder les filtres dans localStorage
+      localStorage.setItem('movieFilters', JSON.stringify(filters))
+    }
+
+    const handleFiltersReset = () => {
+      filteredMovies.value = movies.value
+      localStorage.removeItem('movieFilters')
+    }
 
     // Méthodes
     const addMovie = (movieData) => {
@@ -226,7 +219,7 @@ export default {
       if (movie && confirm(`Êtes-vous sûr de vouloir supprimer "${movie.title}" ?`)) {
         movies.value = movies.value.filter(movie => movie.id !== id)
         showMessage(`Film "${movie.title}" supprimé avec succès !`, 'success')
-        
+        filteredMovies.value = movies.value
         // Annuler l'édition si le film supprimé était en cours d'édition
         if (editingMovie.value && editingMovie.value.id === id) {
           cancelEdit()
@@ -284,22 +277,6 @@ export default {
       }
     }
 
-    const clearFilters = () => {
-      searchTerm.value = ''
-      selectedCategory.value = ''
-      selectedYear.value = ''
-      selectedRating.value = ''
-      selectedFavorites.value = ''
-    }
-
-    const updateFilters = (newFilters) => {
-      if (newFilters.search !== undefined) searchTerm.value = newFilters.search
-      if (newFilters.category !== undefined) selectedCategory.value = newFilters.category
-      if (newFilters.year !== undefined) selectedYear.value = newFilters.year
-      if (newFilters.rating !== undefined) selectedRating.value = newFilters.rating
-      if (newFilters.favorites !== undefined) selectedFavorites.value = newFilters.favorites
-    }
-
     const getMovieCountByCategory = (category) => {
       return movies.value.filter(movie => movie.category === category).length
     }
@@ -333,11 +310,11 @@ export default {
       message,
       availableCategories,
       currentYear,
+      defaultFilters,
       
       // Propriétés calculées
       totalMovies,
       uniqueCategories,
-      uniqueYears,
       favoriteMovies,
       filteredMovies,
       
@@ -348,8 +325,8 @@ export default {
       editMovie,
       cancelEdit,
       toggleFavorite,
-      updateFilters,
-      clearFilters,
+      handleFiltersUpdate,
+      handleFiltersReset,
       getMovieCountByCategory,
       handleImageError
     }

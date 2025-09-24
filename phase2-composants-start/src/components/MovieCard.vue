@@ -19,16 +19,14 @@
         <span class="movie-year">Année : {{ movie.year }}</span>
         <div v-if="movie.vote_average" class="movie-rating">
           <span class="rating-label">Note :</span>
-          <div class="stars">
-            <span 
-              v-for="star in 5" 
-              :key="star"
-              class="star"
-              :class="{ 'star-filled': star <= Math.round(movie.vote_average / 2) }"
-            >
-              ★
-            </span>
-          </div>
+          
+          <StarRating
+            v-model=movie.vote_average
+            :maxStars="8"
+            interactive
+            showLabel
+            size="medium"
+          />
         </div>
       </div>
       <p class="movie-overview" v-if="movie.overview">
@@ -58,6 +56,8 @@
 </template>
 
 <script>
+import StarRating from './StarRating.vue'
+
 export default {
   name: 'MovieCard',
   props: {
@@ -75,7 +75,12 @@ export default {
       // Cache l'image si elle ne peut pas être chargée
       event.target.style.display = 'none'
     }
-  }
+  },
+  components: {
+    StarRating
+  },
+  
 }
+
 </script>
 
