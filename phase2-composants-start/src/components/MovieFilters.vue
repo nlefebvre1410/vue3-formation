@@ -1,144 +1,61 @@
 <template>
-  <div class="card">
-    <h2>🔍 Filtres et recherche</h2>
-    <div class="filters">
-      <div class="filter-group">
-        <label for="search">Recherche :</label>
-        <input 
-          id="search"
-          :value="filters.search"
-          @input="updateFilter('search', $event.target.value)"
-          type="text" 
-          placeholder="Rechercher un film..."
-          class="filter-input"
-        >
-      </div>
-
-      <div class="filter-group">
-        <label for="categoryFilter">Catégorie :</label>
-        <select 
-          id="categoryFilter" 
-          :value="filters.category"
-          @change="updateFilter('category', $event.target.value)"
-          class="filter-select"
-        >
-          <option value="">Toutes les catégories</option>
-          <option v-for="category in categories" :key="category" :value="category">
-            {{ category }} ({{ getCategoryCount(category) }})
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="yearFilter">Année :</label>
-        <select 
-          id="yearFilter" 
-          :value="filters.year"
-          @change="updateFilter('year', $event.target.value)"
-          class="filter-select"
-        >
-          <option value="">Toutes les années</option>
-          <option v-for="year in years" :key="year" :value="year">
-            {{ year }}
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="ratingFilter">Note minimum :</label>
-        <select 
-          id="ratingFilter" 
-          :value="filters.rating"
-          @change="updateFilter('rating', $event.target.value)"
-          class="filter-select"
-        >
-          <option value="">Toutes les notes</option>
-          <option v-for="rating in 5" :key="rating" :value="rating">
-            {{ rating }} étoile{{ rating > 1 ? 's' : '' }} et +
-          </option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label for="favoritesFilter">Favoris :</label>
-        <select 
-          id="favoritesFilter" 
-          :value="filters.favorites"
-          @change="updateFilter('favorites', $event.target.value)"
-          class="filter-select"
-        >
-          <option value="">Tous les films</option>
-          <option value="true">Favoris uniquement</option>
-          <option value="false">Non favoris uniquement</option>
-        </select>
-      </div>
-
-      <div class="filter-group">
-        <label>&nbsp;</label>
-        <button class="btn btn-secondary" @click="clearAllFilters">
-          🗑️ Effacer les filtres
-        </button>
+  <div class="movie-filters">
+    <div class="filters-header">
+      <h2>🔍 Filtres et recherche</h2>
+      <div class="filters-summary">
+        {{ filteredCount }} film(s) trouvé(s) sur {{ totalCount }}
       </div>
     </div>
 
-    <!-- Résumé des filtres actifs -->
-    <div v-if="hasActiveFilters" class="active-filters">
-      <h3>Filtres actifs :</h3>
-      <div class="filter-tags">
-        <span v-if="filters.search" class="filter-tag">
-          Recherche: "{{ filters.search }}"
-          <button @click="updateFilter('search', '')" class="remove-filter">×</button>
-        </span>
-        <span v-if="filters.category" class="filter-tag">
-          Catégorie: {{ filters.category }}
-          <button @click="updateFilter('category', '')" class="remove-filter">×</button>
-        </span>
-        <span v-if="filters.year" class="filter-tag">
-          Année: {{ filters.year }}
-          <button @click="updateFilter('year', '')" class="remove-filter">×</button>
-        </span>
-        <span v-if="filters.rating" class="filter-tag">
-          Note: {{ filters.rating }}+ étoiles
-          <button @click="updateFilter('rating', '')" class="remove-filter">×</button>
-        </span>
-        <span v-if="filters.favorites === 'true'" class="filter-tag">
-          Favoris uniquement
-          <button @click="updateFilter('favorites', '')" class="remove-filter">×</button>
-        </span>
-        <span v-if="filters.favorites === 'false'" class="filter-tag">
-          Non favoris uniquement
-          <button @click="updateFilter('favorites', '')" class="remove-filter">×</button>
-        </span>
+    <div class="filters-content">
+
+      <slot name="filters-section"></slot>
+
+      <!-- Actions -->
+    <div class="filter-actions">
+        <button @click="resetFilters" class="btn btn-secondary">
+          🔄 Réinitialiser
+        </button>
+        <button @click="toggleAdvanced" class="btn btn-outline">
+          {{ showAdvanced ? 'Masquer' : 'Afficher' }} les options avancées
+        </button>
+      </div>
+
+      <div v-if="showAdvanced" class="advanced-filters">
+         À COMPLÉTER : Filtres avancés 
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed,reactive,ref } from 'vue'
 
 export default {
   name: 'MovieFilters',
-  props: {
-    filters: {
-      type: Object,
-      required: true
-    },
-    categories: {
-      type: Array,
-      required: true
-    },
-    years: {
-      type: Array,
-      required: true
-    },
+  props: {    
     movies: {
       type: Array,
       required: true
-    }
+    },
   },
-  emits: ['update-filter', 'clear-filters'],
-  setup(props, { emit }) {
+  emits:['reset'],
+  setup(props, {emit}) {
+
+
+    const filteredCount=computed(()=>!!props.movies.length)
+    const totalCount=ref(0)
+
+     const resetFilters = ()=>{
+            emit('reset',props.movies)
+
+        }
+        
+        const showAdvanced=ref(true);
+        const toggleAdvanced=()=>{
+            showAdvanced.value=!showAdvanced.value
+        }
+
     const hasActiveFilters = computed(() => {
       return props.filters.search || 
              props.filters.category || 
@@ -146,24 +63,25 @@ export default {
              props.filters.rating ||
              props.filters.favorites
     })
-
-    const getCategoryCount = (category) => {
-      return props.movies.filter(movie => movie.category === category).length
-    }
-
-    const updateFilter = (filterName, value) => {
-      emit('update-filter', { [filterName]: value })
-    }
-
-    const clearAllFilters = () => {
-      emit('clear-filters')
-    }
+    const filters = reactive({
+      search: '',
+      category: '',
+      yearFrom: null,
+      yearTo: null,
+      minRating: 0,
+      favoritesOnly: false,
+      sortBy: 'title', // 'title', 'year', 'rating', 'category'
+      sortOrder: 'asc' // 'asc', 'desc'
+    })
 
     return {
       hasActiveFilters,
-      getCategoryCount,
-      updateFilter,
-      clearAllFilters
+      filters,
+      filteredCount,
+      totalCount,
+      resetFilters,
+      toggleAdvanced,
+      showAdvanced
     }
   }
 }

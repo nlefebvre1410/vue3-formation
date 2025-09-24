@@ -52,12 +52,10 @@
           rating: selectedRating,
           favorites: selectedFavorites
         }"
-        :categories="uniqueCategories"
-        :years="uniqueYears"
         :movies="movies"
         @update-filter="updateFilters"
-        @clear-filters="clearFilters"
-      />
+        @reset="clearFilters"
+      ><template #filters-section><FiltersSection :categories="uniqueCategories"/></template></MovieFilters>
 
       <!-- Message si aucun film -->
       <div v-if="filteredMovies.length === 0" class="message info">
@@ -91,6 +89,9 @@ import MovieForm from './components/MovieForm.vue'
 import MovieFilters from './components/MovieFilters.vue'
 import MovieCard from './components/MovieCard.vue'
 import moviesData from './movies.json'
+import StarRating from './components/StarRating.vue'
+import FiltersSection from './components/Filters/FiltersSection.vue'
+import FiltersAction from './components/Filters/FiltersAction.vue'
 
 export default {
   name: 'App',
@@ -98,7 +99,10 @@ export default {
     AppHeader,
     MovieForm,
     MovieFilters,
-    MovieCard
+    MovieCard,
+    StarRating,
+    FiltersSection,
+    FiltersAction
   },
   setup() {
     // Données réactives
